@@ -1,0 +1,57 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL Advanced"
+
+on:
+  push:
+    tags:
+      - "v3.1.0"
+
+jobs:
+  build-db:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17' # 根据你的项目修改
+        distribution: 'temurin'
+
+    # 1. 初始化 CodeQL 并在内部准备数据库空间
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: java
+
+    # 2. 编译项目 (CodeQL 会在此时观测并创建数据库)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+
+    # 3. 找到数据库文件夹并打包
+    # CodeQL 默认将数据库存在 ${{ runner.temp }}/codeql_databases/java
+    - name: Zip CodeQL Database
+      run: |
+        zip -r java-db.zip ${{ runner.temp }}/codeql_databases/java
+
+    # 4. 上传到 GitHub Actions 的 Artifacts 供下载
+    - name: Upload Database Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: codeql-java-database-${{ github.ref_name }}
+        path: java-db.zip
+        retention-days: 5 # 数据库通常很大，建议设置较短的保留期
