@@ -12,6 +12,7 @@
 name: "CodeQL Advanced"
 
 on:
+  workflow_dispatch: # 允许手动点击运行
   push:
     tags:
       - "v3.1.0"
